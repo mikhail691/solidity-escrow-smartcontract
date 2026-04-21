@@ -60,6 +60,13 @@ contract Escrow {
         emit Released(seller, amount);
     }
 
+    function arbiterReleaseToSeller() external onlyArbiter inState(EscrowState.AWAITING_DELIVERY) {
+        state = EscrowState.COMPLETE;
+        (bool success, ) = seller.call{value: address(this).balance}("");
+        require(success, "Transfer to seller failed");
+        emit Released(seller, amount);
+    }
+
     function refundBuyer() external onlyArbiter inState(EscrowState.AWAITING_DELIVERY) {
         state = EscrowState.REFUNDED;
         (bool success, ) = buyer.call{value: address(this).balance}("");
